@@ -1,0 +1,39 @@
+
+namespace KRSPurchase.Domain
+{
+  public class PurchaseOrder
+  {
+    public int Number { get; set; } = 1;
+    public DateTime OrderDate { get; init; }
+    public Supplier Supplier { get; set; }
+    public DateTime EstimatedDeliveryDate => OrderDate.AddDays(Supplier.LeadTime);
+    private List<Item> _items  = new();
+    public IEnumerable<Item> Items => _items;
+    public bool Active { get; set; } = true;
+    public PurchaseOrder(Supplier supplier, List<Item> startingItems)
+    {
+      Supplier = supplier;
+      OrderDate = DateTime.Now;
+      _items = startingItems;
+    }
+
+    // Add an Item to a list
+    public void Add(Item item) 
+    {
+
+      _items = GetAddedItems(item, _items);
+    }
+
+    private List<Item> GetAddedItems(Item item, List<Item> items)
+    {
+        var itemInTheList = items.FirstOrDefault(i => i.Good.Code == item.Good.Code);
+        
+      if (itemInTheList == null)
+          return items.Append(item).ToList();
+    
+        return items.Select(i => i.Good.Code == item.Good.Code 
+          ? new Item(itemInTheList.Good, itemInTheList.Quantity += item.Quantity,itemInTheList.Price) 
+          : i).ToList();
+    }
+  }
+}
